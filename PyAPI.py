@@ -92,10 +92,11 @@ if (data['followers'] != 0):
 
 resp = input(" Enquire about Repos? (y/n): ")
 resp = invalid(resp)
+if (resp == 'y' or resp == 'Y'):
+    repos = info2 (f"https://api.github.com/search/repositories?q=user:{user}&per_page=100")
 while (resp!='n' and resp!='N'):
     flag = 0
     name = input (" Enter the repo name : ")
-    repos = info2 (f"https://api.github.com/search/repositories?q=user:{user}&per_page=100")
     for page in repos:
         for cont in page:
             if(cont['full_name'].split("/")[1] == name):
