@@ -7,9 +7,9 @@ access_token ='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'
 auth = {'Authorization':"Token "+access_token}
 
 url = f"https://api.github.com/users/{user}"
-data = requests.get(url, headers = auth).json()
-if requests.get(url, headers = auth):
-    data = requests.get(url, headers = auth).json()
+response = requests.get(url, headers = auth)
+if response:
+    data = response.json()
 else:
     sys.exit(" User not found")
 
