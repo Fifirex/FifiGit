@@ -4,7 +4,7 @@ import sys
 import os
 import argparse
 
-Token = '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' 
+Token = 'Token_Goes_Here' 
 auth = {'Authorization':"token " + Token}
 
 def screen_clear():
