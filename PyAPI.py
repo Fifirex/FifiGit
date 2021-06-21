@@ -4,7 +4,7 @@ import sys
 # setup owner name , access_token, and headers 
 user = input(" Enter the name: ")
 access_token ='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' 
-auth = {'Authorization':"Token "+access_token}
+auth = {'Authorization':"token "+access_token}
 
 url = f"https://api.github.com/users/{user}"
 response = requests.get(url, headers = auth)
@@ -18,7 +18,7 @@ def info (url):
     for pnum in range(1,600):
         urlN = url + f"?page={pnum}"
         point = requests.get(urlN, headers = auth).json()
-        if(point == []):  
+        if(point == []):
             # repos.append(None)
             break
         else:
@@ -71,23 +71,7 @@ else:
                 print (" Fork Count : " + str(cont['forks_count']))
                 print (" Stargazers Count : " + str(cont['stargazers_count']))
                 print (" Watchers Count : " + str(cont['watchers_count']))
+                print (" License : " + (cont['license'] if cont['license'] != None else "NULL"))
             else:
                 pass
-
-
-# repos = info (f"https://api.github.com/users/{user}/repos")
-
-# all_repo_names=[]
-# for page in repos:
-#     for repo in page:
-#         try:
-#             all_repo_names.append(repo['full_name'].split("/")[1])
-#         except:
-#             pass
-
-# print (all_repo_names)
-# print (len(all_repo_names))
-
-# response = requests.get ('https://api.github.com/users/Fifirex/repos?page=2').json()
-# print (response)
 
