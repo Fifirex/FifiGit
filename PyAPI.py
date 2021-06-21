@@ -28,9 +28,9 @@ def info (url):
 
 def info2 (url):
     listData = []
-    for pnum in range(1,2):
-        # urlN = url + f"?page={pnum}"
-        point = requests.get(url, headers = auth).json()['items']
+    for pnum in range(1,600):
+        urlN = url + f"&page={pnum}"
+        point = requests.get(urlN, headers = auth).json()['items']
         if(point == []):
             # repos.append(None)
             break
@@ -38,7 +38,13 @@ def info2 (url):
             listData.append(point)
     return listData
 
-# test = info2(f"https://api.github.com/search/repositories?q=user:Fifirex")
+def invalid (ch):
+    while (ch!= "y" and ch!= "Y" and ch!= "n" and ch!="N"):
+        print(" Invalid")
+        ch = input(" Enter the choice again (y/n): ")
+    return ch
+
+# test = info2(f"https://api.github.com/search/repositories?q=user:{user}")
 # print (len(test))
 
 # all_repo_names=[]
@@ -85,15 +91,11 @@ if (data['followers'] != 0):
                 pass
 
 resp = input(" Enquire about Repos? (y/n): ")
-while (resp!= "n" and resp!= "y" and resp!= "N" and resp!= "Y"):
-    print(" Invalid")
-    resp = input(" Enter the choice again (y/n): ")
-if (resp == "n" or resp == "N"):
-    sys.exit(" Thank you")
-else:
+resp = invalid(resp)
+while (resp!='n' and resp!='N'):
     flag = 0
     name = input (" Enter the repo name : ")
-    repos = info2 (f"https://api.github.com/search/repositories?q=user:{user}")
+    repos = info2 (f"https://api.github.com/search/repositories?q=user:{user}&per_page=100")
     for page in repos:
         for cont in page:
             if(cont['full_name'].split("/")[1] == name):
@@ -107,5 +109,8 @@ else:
                 pass
     if (flag == 0):
         print (" Repo not found")
+    resp = input(" Continue? (y/n): ")
+    resp = invalid(resp)
 
+print(" Thank You")
 
