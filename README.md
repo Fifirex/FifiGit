@@ -106,6 +106,6 @@ $ cd ~
 $ source .bash_profile
 ```
 
-and **Eureka!**
+and **Voilà!**
 
 now you can run the file from anywhere on the system by just typing `FifiGit` on your Terminal.
