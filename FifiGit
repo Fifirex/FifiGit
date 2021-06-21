@@ -98,6 +98,7 @@ def uInfo(user):
                         pass
 
 def rInfo(user):
+    resp = 'y'
     chckUser(user)
     print ("\n =============================")
     print ("           REPO INFO")
@@ -138,7 +139,8 @@ def rInfo(user):
 
 def main():
     fl = 0
-    parser = argparse.ArgumentParser(description = "GitHub API interface")
+    parser = argparse.ArgumentParser(description = "GitHub API interface",
+                                    epilog = "Enjoy the program! :)")
     parser.add_argument("name", help="initiates the program for GitHub user")
     parser.add_argument("-u", "--uinfo", action="store_true", help="Display only User Info")
     parser.add_argument("-r", "--rinfo", action="store_true", help="Diplay only Repo Info")
