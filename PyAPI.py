@@ -4,7 +4,7 @@ import sys
 # setup owner name , access_token, and headers 
 # access_token = input(" Enter the Acess Token: ")
 access_token ='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' 
-user = input(" Enter the name: ")
+user = input("\n Enter the name: ")
 auth = {'Authorization':"token "+access_token}
 
 url = f"https://api.github.com/users/{user}"
@@ -41,7 +41,7 @@ def info2 (url):
 def invalid (ch):
     while (ch!= "y" and ch!= "Y" and ch!= "n" and ch!="N"):
         print(" Invalid")
-        ch = input(" Enter the choice again (y/n): ")
+        ch = input("\n Enter the choice again (y/n): ")
     return ch
 
 # test = info2(f"https://api.github.com/search/repositories?q=user:{user}")
@@ -90,6 +90,9 @@ if (data['followers'] != 0):
             except:
                 pass
 
+print ("\n =============================")
+print ("           REPO INFO")
+print (" =============================")
 resp = input(" Enquire about Repos? (y/n): ")
 resp = invalid(resp)
 if (resp == 'y' or resp == 'Y'):
@@ -104,13 +107,20 @@ while (resp!='n' and resp!='N'):
                 print (" Fork Count : " + str(cont['forks_count']))
                 print (" Stargazers Count : " + str(cont['stargazers_count']))
                 print (" Watchers Count : " + str(cont['watchers_count']))
-                print (" License : " + (cont['license'] if cont['license'] != None else "NULL"))
+                if (cont['license'] == None):
+                    print (" License : NULL")
+                else:
+                    print (" License : " + cont['license']['name'])
+                    print (" * Key : " + cont['license']['key'])                    
+                    print (" * spdx_id : " + cont['license']['spdx_id'])
+                    print (" * url : " + cont['license']['url'])
+                    print (" * node_id : " + cont['license']['node_id'])
                 flag = 1
             else:
                 pass
     if (flag == 0):
         print (" Repo not found")
-    resp = input(" Continue? (y/n): ")
+    resp = input("\n Continue? (y/n): ")
     resp = invalid(resp)
 
 print(" Thank You")
