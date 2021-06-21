@@ -2,8 +2,9 @@ import requests
 import sys
 
 # setup owner name , access_token, and headers 
-user = input(" Enter the name: ")
+# access_token = input(" Enter the Acess Token: ")
 access_token ='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' 
+user = input(" Enter the name: ")
 auth = {'Authorization':"token "+access_token}
 
 url = f"https://api.github.com/users/{user}"
@@ -24,6 +25,34 @@ def info (url):
         else:
             listData.append(point)
     return listData
+
+def info2 (url):
+    listData = []
+    for pnum in range(1,2):
+        # urlN = url + f"?page={pnum}"
+        point = requests.get(url, headers = auth).json()['items']
+        if(point == []):
+            # repos.append(None)
+            break
+        else:
+            listData.append(point)
+    return listData
+
+# test = info2(f"https://api.github.com/search/repositories?q=user:Fifirex")
+# print (len(test))
+
+# all_repo_names=[]
+# for page in test:
+#     for repo in page:
+#         try:
+#             all_repo_names.append(repo['full_name'].split("/")[1])
+#         except:
+#             pass
+    
+# print (all_repo_names)
+
+# test = requests.get("https://api.github.com/search/repositories?q=user:Aeroscythe", headers=auth)
+# print (test.json()['items'])
 
 print (" =============================")
 print ("           USER INFO")
@@ -62,8 +91,9 @@ while (resp!= "n" and resp!= "y" and resp!= "N" and resp!= "Y"):
 if (resp == "n" or resp == "N"):
     sys.exit(" Thank you")
 else:
+    flag = 0
     name = input (" Enter the repo name : ")
-    repos = info (f"https://api.github.com/users/{user}/repos")
+    repos = info2 (f"https://api.github.com/search/repositories?q=user:{user}")
     for page in repos:
         for cont in page:
             if(cont['full_name'].split("/")[1] == name):
@@ -72,6 +102,10 @@ else:
                 print (" Stargazers Count : " + str(cont['stargazers_count']))
                 print (" Watchers Count : " + str(cont['watchers_count']))
                 print (" License : " + (cont['license'] if cont['license'] != None else "NULL"))
+                flag = 1
             else:
                 pass
+    if (flag == 0):
+        print (" Repo not found")
+
 
