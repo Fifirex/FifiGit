@@ -50,7 +50,7 @@ def chckUser (user):
         data = response.json()
         return data
     else:
-        sys.exit(" User not found")
+        sys.exit("\n User not found\n")
 
 
 def uInfo(user):
