@@ -1,19 +1,16 @@
 #!/usr/local/bin/python3
 import requests
 import sys
+import os
 
-# setup owner name , access_token, and headers 
-# access_token = input(" Enter the Acess Token: ")
-access_token ='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' 
-user = input("\n Enter the name: ")
-auth = {'Authorization':"token "+access_token}
+Token ='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' 
+auth = {'Authorization':"token " + Token}
 
-url = f"https://api.github.com/users/{user}"
-response = requests.get(url, headers = auth)
-if response:
-    data = response.json()
-else:
-    sys.exit(" User not found")
+def screen_clear():
+    if os.name == 'posix':
+        _ = os.system('clear')
+    else:
+        _ = os.system('cls')
 
 def info (url):
     listData = []
@@ -61,69 +58,90 @@ def invalid (ch):
 # test = requests.get("https://api.github.com/search/repositories?q=user:Aeroscythe", headers=auth)
 # print (test.json()['items'])
 
-print (" =============================")
-print ("           USER INFO")
-print (" =============================")
-print (" Username: " + user)
-print (" Name : " + (data['name'] if data['name'] != None else "NULL"))
-print (" Avatar URL : " + data['avatar_url'])
-print (" GitHub Hnadle : " + data['url'])
-print (" Email : " + (data['email'] if data['email'] != None else "NULL"))
-print (" BioData : " + (data['bio'] if data['bio'] != None else "NULL"))
+def main():
 
-print (" Followers : [" + str(data['followers']) + "]")
-if (data['followers'] != 0):
-    followers = info (f"https://api.github.com/users/{user}/followers")
-    for page in followers:
-        for cont in page:
-            try:
-                print (" * " + cont['login'])
-            except:
-                pass
+    screen_clear()
+    user = input("\n Enter the name: ")
 
-print (" Following : [" + str(data['following']) + "]")
-if (data['followers'] != 0):
-    following = info (f"https://api.github.com/users/{user}/following")
-    for page in following:
-        for cont in page:
-            try:
-                print (" * " + cont['login'])
-            except:
-                pass
+    url = f"https://api.github.com/users/{user}"
+    response = requests.get(url, headers = auth)
+    if response:
+        data = response.json()
+    else:
+        sys.exit(" User not found")
 
-print ("\n =============================")
-print ("           REPO INFO")
-print (" =============================")
-resp = input(" Enquire about Repos? (y/n): ")
-resp = invalid(resp)
-if (resp == 'y' or resp == 'Y'):
-    repos = info2 (f"https://api.github.com/search/repositories?q=user:{user}&per_page=100")
-while (resp!='n' and resp!='N'):
-    flag = 0
-    name = input (" Enter the repo name : ")
-    for page in repos:
-        for cont in page:
-            if(cont['full_name'].split("/")[1] == name):
-                print (" Private : " + ("True" if cont['private'] else "False"))
-                print (" Fork Count : " + str(cont['forks_count']))
-                print (" Stargazers Count : " + str(cont['stargazers_count']))
-                print (" Watchers Count : " + str(cont['watchers_count']))
-                if (cont['license'] == None):
-                    print (" License : NULL")
-                else:
-                    print (" License : " + cont['license']['name'])
-                    print (" * Key : " + cont['license']['key'])                    
-                    print (" * spdx_id : " + cont['license']['spdx_id'])
-                    print (" * url : " + cont['license']['url'])
-                    print (" * node_id : " + cont['license']['node_id'])
-                flag = 1
-            else:
-                pass
-    if (flag == 0):
-        print (" Repo not found")
-    resp = input("\n Continue? (y/n): ")
+    print ("\n =============================")
+    print ("           USER INFO")
+    print (" =============================\n")
+    print (" Username: " + user)
+    print (" Name : " + (data['name'] if data['name'] != None else "NULL"))
+    print (" Avatar URL : " + data['avatar_url'])
+    print (" GitHub Hnadle : " + data['url'])
+    print (" Email : " + (data['email'] if data['email'] != None else "NULL"))
+    print (" BioData : " + (data['bio'] if data['bio'] != None else "NULL"))
+
+    print ("\n Followers : [" + str(data['followers']) + "]")
+    ch = input(" Do u want the usernames? (y/n): ")
+    ch = invalid(ch)
+    if (ch == 'y' or ch == 'Y'):
+        if (data['followers'] != 0):
+            followers = info (f"https://api.github.com/users/{user}/followers")
+            for page in followers:
+                for cont in page:
+                    try:
+                        print (" * " + cont['login'])
+                    except:
+                        pass
+
+    print ("\n Following : [" + str(data['following']) + "]")
+    ch = input(" Do u want the usernames? (y/n): ")
+    ch = invalid(ch)
+    if (ch == 'y' or ch == 'Y'):
+        if (data['followers'] != 0):
+            following = info (f"https://api.github.com/users/{user}/following")
+            for page in following:
+                for cont in page:
+                    try:
+                        print (" * " + cont['login'])
+                    except:
+                        pass
+
+    print ("\n =============================")
+    print ("           REPO INFO")
+    print (" =============================")
+    response2 = requests.get("https://api.github.com/search/repositories?q=user:{user}&per_page=1")
+    resp = input(" Enquire about Repos? (y/n): ")
     resp = invalid(resp)
+    if (resp == 'y' or resp == 'Y'):
+        repos = info2 (f"https://api.github.com/search/repositories?q=user:{user}&per_page=100")
+    while (resp!='n' and resp!='N'):
+        flag = 0
+        name = input (" Enter the repo name : ")
+        for page in repos:
+            for cont in page:
+                if(cont['full_name'].split("/")[1] == name):
+                    print (" Private : " + ("True" if cont['private'] else "False"))
+                    print (" Fork Count : " + str(cont['forks_count']))
+                    print (" Stargazers Count : " + str(cont['stargazers_count']))
+                    print (" Watchers Count : " + str(cont['watchers_count']))
+                    if (cont['license'] == None):
+                        print (" License : NULL")
+                    else:
+                        print (" License : " + cont['license']['name'])
+                        print (" * Key : " + cont['license']['key'])                    
+                        print (" * spdx_id : " + cont['license']['spdx_id'])
+                        print (" * url : " + cont['license']['url'])
+                        print (" * node_id : " + cont['license']['node_id'])
+                    flag = 1
+                else:
+                    pass
+        if (flag == 0):
+            print (" Repo not found")
+        resp = input("\n Continue? (y/n): ")
+        resp = invalid(resp)
 
-print(" Thank You")
+    print(" Thank You")
 
+if __name__ == "__main__":
+    main()
 
