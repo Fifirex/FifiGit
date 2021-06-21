@@ -1,5 +1,5 @@
 # KOSS-Selections-API
-This is a CLI to interact with the [GitHub REST API](https://docs.github.com/en/rest). The core of the program is build upon Python, mainly using the [requests](https://pypi.org/project/requests/) library. The library is used to `GET` data from the API server and import it to the Python code.
+This is a CLI to interact with the [GitHub REST API](https://docs.github.com/en/rest). The core of the program is build upon Python, mainly using the [requests](https://pypi.org/project/requests/) and the [argparse](https://docs.python.org/3/library/argparse.html) library. The `request` library is used to `GET` data from the API server and import it to the Python code, while the `argparse` ;ibrary is used to build the Command Line Interface, using arguement flags.
 
 Feel free to jump to the [Installation](#install) if you want to skip over the explanation.
 
