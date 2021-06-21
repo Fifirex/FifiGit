@@ -138,7 +138,7 @@ def rInfo(user):
 
 def main():
     fl = 0
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description = "GitHub API interface")
     parser.add_argument("name", help="initiates the program for GitHub user")
     parser.add_argument("-u", "--uinfo", action="store_true", help="Display only User Info")
     parser.add_argument("-r", "--rinfo", action="store_true", help="Diplay only Repo Info")
