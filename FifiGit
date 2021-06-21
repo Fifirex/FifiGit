@@ -2,8 +2,9 @@
 import requests
 import sys
 import os
+import argparse
 
-Token = 'Token_Goes_Here' 
+Token = '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' 
 auth = {'Authorization':"token " + Token}
 
 def screen_clear():
@@ -42,33 +43,18 @@ def invalid (ch):
         ch = input("\n Enter the choice again (y/n): ")
     return ch
 
-# test = info2(f"https://api.github.com/search/repositories?q=user:{user}")
-# print (len(test))
-
-# all_repo_names=[]
-# for page in test:
-#     for repo in page:
-#         try:
-#             all_repo_names.append(repo['full_name'].split("/")[1])
-#         except:
-#             pass
-    
-# print (all_repo_names)
-
-# test = requests.get("https://api.github.com/search/repositories?q=user:Aeroscythe", headers=auth)
-# print (test.json()['items'])
-
-def main():
-
-    user = sys.argv[1]
-
+def chckUser (user):
     url = f"https://api.github.com/users/{user}"
     response = requests.get(url, headers = auth)
     if response:
         data = response.json()
+        return data
     else:
         sys.exit(" User not found")
 
+
+def uInfo(user):
+    data = chckUser(user)
     print ("\n =============================")
     print ("           USER INFO")
     print (" =============================\n")
@@ -111,6 +97,8 @@ def main():
                     except:
                         pass
 
+def rInfo(user):
+    chckUser(user)
     print ("\n =============================")
     print ("           REPO INFO")
     print (" =============================\n")
@@ -148,8 +136,44 @@ def main():
         resp = input("\n Continue? (y/n): ")
         resp = invalid(resp)
 
-    print(" Terminating... \n")
-
+def main():
+    fl = 0
+    parser = argparse.ArgumentParser()
+    parser.add_argument("name", help="initiates the program for GitHub user")
+    parser.add_argument("-u", "--uinfo", action="store_true", help="Display only User Info")
+    parser.add_argument("-r", "--rinfo", action="store_true", help="Diplay only Repo Info")
+    args = parser.parse_args()
+    user = args.name
+    if (args.rinfo):
+        fl = 1
+        rInfo(user)
+    if (args.uinfo):
+        fl = 1
+        uInfo(user)
+    elif (fl == 0):
+        uInfo(user)
+        rInfo(user)
+    
+    # idek why i wrote these 2 lines
+    print("\n Wrapping up everything...")
+    print(" Successfully Terminated...\n")
+    
 if __name__ == "__main__":
     main()
+
+# test = info2(f"https://api.github.com/search/repositories?q=user:{user}")
+# print (len(test))
+
+# all_repo_names=[]
+# for page in test:
+#     for repo in page:
+#         try:
+#             all_repo_names.append(repo['full_name'].split("/")[1])
+#         except:
+#             pass
+    
+# print (all_repo_names)
+
+# test = requests.get("https://api.github.com/search/repositories?q=user:Aeroscythe", headers=auth)
+# print (test.json()['items'])
 
