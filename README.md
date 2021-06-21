@@ -59,7 +59,7 @@ This time delay was reduced by pre loading Repositaries, and increasing the `per
 
 > Note : This is a Unix Executable File, which can be run only on Unix-like OS (Linux or MacOS). For using the file on Windows, you can extract the Python core and convert it to a .exe file, and add it to the PATH in a similar fashion. 
 
-> Note : For API access, we need an access token (mentioned in Section 1). Generate one and add it to the line 7 in the code. 
+> Note : For API access, we need an access token (mentioned in Section 1). Generate one and add it to the **line 7** in the code. 
 
 First, we need th code. Clone the repository into a Directory of your choice using
 
