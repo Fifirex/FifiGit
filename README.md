@@ -57,7 +57,7 @@ This time delay was reduced by pre loading Repositaries, and increasing the `per
 
 ## <a name="install">Get the Code! </a>
 
-> Note : This is a Unix Executable File, and I have just tested it on Unix-like OS (Linux or MacOS).
+> Note : This is a Unix Executable File, which can be run only on Unix-like OS (Linux or MacOS). For using the file on Windows, you can extract the Python core and convert it to a .exe file, and add it to the PATH in a similar fashion. 
 
 First, we need th code. Clone the repository into a Directory of your choice using
 
