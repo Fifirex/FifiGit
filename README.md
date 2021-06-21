@@ -1,12 +1,12 @@
 # KOSS-Selections-API
-This is a CLI to interact with the [GitHub REST API](https://docs.github.com/en/rest). The core of the program is build upon Python, mainly using the [requests](https://pypi.org/project/requests/) library. The library is used to `GET` data from the API server and import it to the Python code.
+This is a CLI to interact with the [GitHub REST API](https://docs.github.com/en/rest). The core of the program is build upon Python, mainly using the [requests](https://pypi.org/project/requests/) and the [argparse](https://docs.python.org/3/library/argparse.html) library. The `request` library is used to `GET` data from the API server and import it to the Python code, while the `argparse` library is used to build the Command Line Interface, using arguement flags.
 
 Feel free to jump to the [Installation](#install) if you want to skip over the explanation.
 
 ## GitHub REST API
 GitHub REST API can be used to create calls to get the data you need to integrate with GitHub.
 
-Trying out a basic command, we can look at the basic functionality of the API
+Trying out a basic command, we can look at the functionality of the API
 
 ```
 $ curl https://api.github.com/Fifirex
@@ -20,14 +20,14 @@ $ curl https://api.github.com/Fifirex
 > }
 ```
 
-If you add the `-i` tag we see that the `Content-Type` is `application/json`.
+If you add the `-i` (`INFO`) tag we see that the `Content-Type` is `application/json`. Which implies that the returned objectafter a 'GET' command will be of 'json' format, this makes it easier for us to access information due to the presence of key attributes.
 
-This can be usd to access Basic information and Public Repositaries on GitHub. To access Private Repos and more info on the user, we can generate a [Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) with valid scopes to access the respective data.
+This can be usd to access User information and Public Repositaries from GitHub. To access Private Repos and more info on the user, we can generate a [Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) with valid scopes to access the respective data.
 
-So we can access all the Repos by using the following command for a specific username
+Using the Access token we can access Information on all the Repos by using the following command for a specific username
 
 ```
-curl -H “Authorization: token MYTOKEN” https://api.github.com/search/repositories?q=user:MYUSERNAME
+curl -H “Authorization: token MYTOKEN” "https://api.github.com/search/repositories?q=user:MYUSERNAME"
 ```
 
 This is all we need to know about the API to build our CLI.
@@ -45,6 +45,27 @@ data = requests.get (f"https://api.github.com/users/{user}", headers = auth).jso
 `data` is the response `json` object, through which the data is extracted using the key attributes.
 
 The interactive interface is then built on these foundations, which was then made into an Unix Executable File to run it through the Terminal.
+
+We use `argparse` to convert the executable file into a useful Command Line Interface. To find how it works we run
+
+```
+$ FifiGit --help
+usage: Fifigit [-h] [-u] [-r] name
+
+positional arguments:
+  name         initiates the program for GitHub user
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -u, --uinfo  Display only User Info
+  -r, --rinfo  Diplay only Repo Info
+```
+
+To keep it simple, there are are just 2 flags that I have implemented, which are enough for the required usage.
+
+* `--uinfo` - When this flag is used alone, only the user Information is displayed. 
+* `--rinfo` - When this flag is used alone, only the user Repositary Information is displayed. 
+* If both the flags are used, or none are used, the system runs both the modules and displayes the entire Information.
 
 ## Let's talk _Python_
 The reason I chose this language over something like C++ is beacuse of the easy http connection power it possesses. `GET` commands can be used in just a single line, and playing with `json` objects is simpler too.
