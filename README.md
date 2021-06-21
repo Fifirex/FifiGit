@@ -99,7 +99,12 @@ This opens the file in TextEdit, now just add the following line at the end of t
 ```
 export PATH=$PATH":$HOME/bin"
 ```
-Type `source .bash_profile` to reload .bash_profile and update the changes.
+Go to the home directory and source `.bash_profile` to update the changes.
+
+```
+$ cd ~
+$ source .bash_profile
+```
 
 and **Eureka!**
 
