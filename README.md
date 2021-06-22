@@ -50,18 +50,17 @@ We use `argparse` to convert the executable file into a useful Command Line Inte
 
 ```
 $ FifiGit --help
-usage: Fifigit [-h] [-u | -r RINFO | -l] name
+usage: FifiGit [-h] [-u | -r REPO | -l] name
 
 GitHub API interface
 
 positional arguments:
-  name                  initiates the program for GitHub user
+  name                  Initiates the program for the given user
 
 optional arguments:
   -h, --help            show this help message and exit
   -u, --uinfo           Display only User Info
-  -r RINFO, --rinfo RINFO
-                        Displays the Repo Info
+  -r REPO, --repo REPO  Displays the Repo Info
   -l, --list            Display all the Repo Names
 
 Enjoy the program! :)
@@ -71,8 +70,10 @@ These are the possible flags for the interface:
 
 * `--help` - The above help menus is shown
 * `--uinfo` - It takes the argument `name` and displays the UserInfo for the respective User.
-* `--rinfo` - It takes 2 arguments, `name` and `RINFO` and searches for the repository by that name on the User's account. If found, it displays the basic information about it.
+* `--rinfo` - It takes 2 arguments, `name` and `REPO` and searches for the repository by that name on the User's account. If found, it displays the basic information about it.
 * `--list` - It takes the argument `name` and displays the list all the Repositories under the User Account.
+
+> Note: GitHub API restricts repo search results to the first `1000`, there is a warning thrown if `total_count > 1000`, as all the Repos cannot be listed or searched, in case of a huge Repo Base. 
 
 These 3 arguments are grouped using the `add_mutually_exclusive_group()` instance, so only one of them can be activated at a single point. (Hence the `|` in the `help` menu)
 
@@ -82,14 +83,46 @@ The `help` menu is filled with the following statement
 parser = argparse.ArgumentParser(description = "GitHub API interface", epilog = "Enjoy the program! :)")
 ```
 
-## Let's talk _Python_
+### Why in Python?
 The reason I chose this language over something like C++ is beacuse of the easy http connection power it possesses. `GET` commands can be used in just a single line, and playing with `json` objects is simpler too.
 
 But...
 
 `GET` process in general is too slow for any language, and thus acts as the Rate Limiter Command in the program. The larger the data set (`google` having over 2000 repos), the more time it takes.
 
-This time delay was reduced by pre loading Repositaries, and increasing the `per_page` to its maximum (`100`). I have also added a `WARNING` flag if the repo count exceeds `50`, and the user can chose to list out the names (not recommended) if they want to.
+### Countering the Time delay
+
+This time delay was reduced by pre loading Repositaries, and increasing the `per_page` to its maximum (`100`) while searching. 
+
+The one major boost in speed was achieved after `--list` was made page-wise, where only 10 results are displayed at a time. A `goto` feature is also added to the flag for easier navigation.
+
+This snippet shows how the time boost is acieved for a huge repo base like `google` ( `2006` owned repos)
+
+```
+$ FifiGit google -l
+
+ =============================
+           REPO INFO
+       unforked only  :)
+ =============================
+
+ Total count : [2006]
+ Warning: API limits search to first 1000 results only (100 pages)
+
+ Page: 1 of 100
+ * material-design-icons
+ * guava
+ * material-design-lite
+ * styleguide
+ * leveldb
+ * googletest
+ * iosched
+ * gson
+ * python-fire
+ * web-starter-kit
+
+ Next Page? (y/n/goto(g)): 
+```
 
 ## <a name="install">Get the Code! </a>
 
@@ -103,7 +136,7 @@ First, we need th code. Clone the repository into a Directory of your choice usi
 git clone https://github.com/Fifirex/KOSS-Selections-API.git
 ```
 
-Once we have the executable file, just typing `./FifiGit` while in the Directory will run the program. To make it a true CLI, we need meddle with the `PATH`.
+Once we have the executable file, just typing `./FifiGit` while in the Directory will run the program. To make it a true CLI, we need meddle with the `$PATH`.
 
 First, make a temporary `bin` which will then be added to the `PATH`
 
@@ -113,7 +146,7 @@ $ cp FifiGit ~/bin
 $ export PATH=$PATH":$HOME/bin"
 ```
 
-This creates a copy of the file in the `PATH` and now you can run it by just,
+This creates a copy of the file in the `$PATH` and now you can run it by just,
 
 ```
 $ FifiGit Fifirex -u
