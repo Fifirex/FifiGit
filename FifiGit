@@ -3,9 +3,41 @@ import requests
 import sys
 import os
 import argparse
+from string import Template
 
 Token = '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' 
 auth = {'Authorization':"token " + Token}
+
+queryTemplate = Template(
+"""{
+  repository(name: $repo, owner: $user) {
+    licenseInfo {
+      key
+      name
+      url
+      spdxId
+    }
+    isFork
+    isPrivate
+    forks {
+      totalCount
+    }
+    stargazers {
+      totalCount
+    }
+    watchers {
+      totalCount
+    }
+    repositoryTopics(first: $num) {
+      nodes {
+        topic {
+          name
+        }
+      }
+    }
+  }
+}"""
+)
 
 def screen_clear():
     if os.name == 'posix':
@@ -24,6 +56,13 @@ def info (url):
             listData.append(point)
     return listData
 
+def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
+    request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=auth)
+    if request.status_code == 200:
+        return request.json()
+    else:
+        raise Exception("Query failed to run by returning code of {}. {}".format(request.status_code, query))
+
 def info2 (url):
     listData = []
     for pnum in range(1,600):
@@ -34,21 +73,6 @@ def info2 (url):
         else:
             listData.append(point)
     return listData
-
-def search (url, name):
-    listData = []
-    for pnum in range(1,10):
-        urlN = url + f"&page={pnum}"
-        point = requests.get(urlN, headers = auth).json()['items']
-        if(point == []):
-            break
-        else:
-            listData.append(point)
-            for page in listData:
-                for cont in page:
-                    if(cont['full_name'].split("/")[1] == name):
-                        return cont
-    return 0
 
 def disp (url):
     listData = []
@@ -131,23 +155,31 @@ def rInfo(user, name, state):
             resp = input("\n Proceed, dispite the Warning? (y/n): ")
             resp = invalid(resp)
         if (resp == 'y' or resp == 'Y'):
-            cont = search (f"https://api.github.com/search/repositories?q=user:{user}&per_page=100", name)
-            if(cont != 0):
+            query = queryTemplate.substitute(user = "\"{}\"".format(user), repo = "\"{}\"".format(name), num = 100)
+            result = run_query(query) 
+            if(result["data"]["repository"] != None):
                 print ("\n Name : {}/{}".format(user, name))
-                print (" Private : " + ("True" if cont['private'] else "False"))
-                print (" Fork Count : " + str(cont['forks_count']))
-                print (" Stargazers Count : " + str(cont['stargazers_count']))
-                print (" Watchers Count : " + str(cont['watchers_count']))
-                if (cont['license'] == None):
+                print (" Private : " + ("True" if result["data"]["repository"]["isPrivate"] else "False"))
+                print (" Fork Count : " + str(result["data"]["repository"]["forks"]["totalCount"]))
+                print (" Stargazers Count : " + str(result["data"]["repository"]["stargazers"]["totalCount"]))
+                print (" Watchers Count : " + str(result["data"]["repository"]["watchers"]["totalCount"]))
+
+                topic = result["data"]["repository"]["repositoryTopics"]["nodes"]
+                if (len(topic) == 0):
+                    print (" Topics : NULL")
+                else:
+                    print (" Topics : " + str(len(topic)))
+                    for i in range(len(topic)):
+                        print (" * {}".format(topic[i]["topic"]["name"]))
+                        
+                if (result["data"]["repository"]["licenseInfo"] == None):
                     print (" License : NULL")
                 else:
-                    print (" License : " + cont['license']['name'])
-                    print (" * Key : " + cont['license']['key'])                    
-                    print (" * Key : " + cont['license']['key'])                    
-                    print (" * Key : " + cont['license']['key'])                    
-                    print (" * spdx_id : " + cont['license']['spdx_id'])
-                    print (" * url : " + cont['license']['url'])
-                    print (" * node_id : " + cont['license']['node_id'])
+                    print (" License : " + result["data"]["repository"]["licenseInfo"]["name"])
+                    print (" * Key : " + result["data"]["repository"]["licenseInfo"]["key"])                                      
+                    print (" * spdx_id : " + result["data"]["repository"]["licenseInfo"]["spdxId"])
+                    print (" * url : " + result["data"]["repository"]["licenseInfo"]["url"])
+
             else:
                 print ("\n Repo not found\n Hint: you must own the repo (not forked)")
                 if (response2['total_count'] > 1000):
