@@ -75,7 +75,7 @@ These are the possible flags for the interface:
 * `--list` - It takes the argument `name` and displays the list all the Repositories under the User Account.
 * `--sort_list` - It takes the argument `name` and displays the list all the Repositories sorted Alphabetically.
 
-Workings of each flag explained in [this]("time") section.
+Workings of each flag explained in [this](#time) section.
 
 > Note: GitHub API restricts repo search results to the first `1000`, there is a warning thrown if `total_count > 1000`, as all the Repos cannot be listed or searched, in case of a huge Repo Base. 
 
@@ -210,4 +210,4 @@ $ source .bash_profile
 
 and **Voilà!**
 
-now you can run the file from anywhere on the system by just typing `FifiGit` with the [format]("form") mentioned above on your Terminal.
+now you can run the file from anywhere on the system by just typing `FifiGit` with the [format](#form) mentioned above on your Terminal.
