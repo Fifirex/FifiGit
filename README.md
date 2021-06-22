@@ -70,8 +70,10 @@ These are the possible flags for the interface:
 
 * `--help` - The above help menus is shown
 * `--uinfo` - It takes the argument `name` and displays the UserInfo for the respective User.
-* `--rinfo` - It takes 2 arguments, `name` and `REPO` and searches for the repository by that name on the User's account. If found, it displays the basic information about it.
+* `--repo` - It takes 2 arguments, `name` and `REPO` and searches for the repository by that name on the User's account. If found, it displays the basic information about it.
 * `--list` - It takes the argument `name` and displays the list all the Repositories under the User Account.
+
+> Note: workings of each flag explained in [this]("time") section.
 
 > Note: GitHub API restricts repo search results to the first `1000`, there is a warning thrown if `total_count > 1000`, as all the Repos cannot be listed or searched, in case of a huge Repo Base. 
 
@@ -90,9 +92,7 @@ But...
 
 `GET` process in general is too slow for any language, and thus acts as the Rate Limiter Command in the program. The larger the data set (`google` having over 2000 repos), the more time it takes.
 
-### Countering the Time delay
-
-This time delay was reduced by pre loading Repositaries, and increasing the `per_page` to its maximum (`100`) while searching. 
+## <a name="time">Countering the Time delay </a>
 
 The one major boost in speed was achieved after `--list` was made page-wise, where only 10 results are displayed at a time. A `goto` feature is also added to the flag for easier navigation.
 
@@ -123,6 +123,34 @@ $ FifiGit google -l
 
  Next Page? (y/n/goto(g)): 
 ```
+
+The `--repo` tag has been modified a lot to reduce the time taken in searching the Repos. This was done by pre loading Repositaries, and increasing the `per_page` to its maximum (`100`) while searching. 
+
+This implies that while searching on a full repo base (`1000 repos`), it would only take `10` `GET` commands in the worst case scenario. And by pre loading the pages and searching, the probability of hitting the worst case is reduced. 
+
+The worst case scenario was measured by searching a non-existent Repo at `google`
+
+```
+$ FifiGit google -r hi
+
+ =============================
+           REPO INFO
+       unforked only  :)
+ =============================
+
+ Total count : [2006]
+ Warning: API limits search to first 1000 results only (some Repos might be missed)
+
+ Proceed, dispite the Warning? (y/n): y
+
+ Repo not found
+ Hint: you must own the repo (not forked)
+ Hint: the repos exceeded API limit, so it must've missed there
+
+ Time Taken: 22.84958250471863 seconds
+```
+
+This time is the worst case time, and is a marvelous improvement over the previous times.
 
 ## <a name="install">Get the Code! </a>
 
