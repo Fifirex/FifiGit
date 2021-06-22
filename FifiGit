@@ -4,7 +4,7 @@ import sys
 import os
 import argparse
 
-Token = 'Token_Goes_Here' 
+Token = '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' 
 auth = {'Authorization':"token " + Token}
 
 def screen_clear():
@@ -35,6 +35,12 @@ def info2 (url):
             break
         else:
             listData.append(point)
+    return listData
+
+def disp (url):
+    listData = []
+    point = requests.get(url, headers = auth).json()['items']
+    listData.append(point)
     return listData
 
 def invalid (ch):
@@ -136,42 +142,69 @@ def rInfo(user, name, state):
             if (flag == 0):
                 print (" Repo not found\n Hint: you must own the repo (not forked)")
     elif(state == 1):
-        resp = 'y'
         response2 = requests.get(f"https://api.github.com/search/repositories?q=user:{user}&per_page=1", headers = auth).json()
-        print ("Total count : [" + str(response2['total_count']) + "]")
+        print (" Total count : [" + str(response2['total_count']) + "]")
         if (response2['total_count'] == 0):
             print(" NULL")
-            resp = 'n'
-        elif (response2['total_count'] > 100):
-            print ("\n Warning: There are a lot of repos, the system may take a log time to respond.")
-            resp = input("\n Proceed discarding the Warning? (y/n): ")
-            resp = invalid(resp)
-        if (resp == 'y' or resp == 'Y'):
-            repos = info2 (f"https://api.github.com/search/repositories?q=user:{user}&per_page=100")
-            flag = 0
-            for page in repos:
-                for cont in page:
-                    print (" " + cont['full_name'].split("/")[1])
+        else:
+            resp = 'y'
+            i = 1
+            if (response2['total_count'] > 1000):
+                print(" Warning: API limits search to first 1000 results only (100 pages)")
+                tot = 100
+            else:
+                tot = (int)(response2['total_count']/10) + (1 if (response2['total_count']%10 != 0) else 0)
+            while (resp == 'y' or resp == 'Y'):
+                print ("\n Page: {} of {}".format(i, tot))
+                repos = disp(f"https://api.github.com/search/repositories?q=user:{user}&per_page=10&page={i}")
+                for page in repos:
+                    for cont in page:
+                        print (" * " + cont['full_name'].split("/")[1])
+                if (i < tot):
+                    resp = input("\n Next Page? (y/n/goto(g)): ")
+                    if (resp == 'g' or resp == 'G'):
+                        page = input(" Enter the page no.: ")
+                        while (page.isnumeric() == False or (int(page)<1 or int(page)>tot)):
+                            print(" Invalid Input")
+                            page = input("\n Enter the page no.: ")
+                        i = int(page)
+                        resp = 'y'
+                    else:
+                        resp = invalid(resp)
+                        i+=1
+                elif (i == tot):
+                    resp = input("\n Goto a Page? (y/n): ")
+                    resp = invalid(resp)
+                    if (resp == 'y' or resp == 'Y'):
+                        page = input(" Enter the page no.: ")
+                        while (page.isnumeric() == False or (int(page)<1 or int(page)>tot)):
+                            print(" Invalid Input")
+                            page = input("\n Enter the page no.: ")
+                        i = int(page)
+                    else:
+                        break
+                else:
+                    break
                         
 
 def main():
     parser = argparse.ArgumentParser(description = "GitHub API interface",
-                                    epilog = "Enjoy the program! :)")
+                                     epilog = "Enjoy the program! :)")
     group = parser.add_mutually_exclusive_group()
-    parser.add_argument("name", help="initiates the program for GitHub user")
+    parser.add_argument("name", help="Initiates the program for the given user")
     group.add_argument("-u", "--uinfo", action="store_true", help="Display only User Info")
-    group.add_argument("-r", "--rinfo", help="Displays the Repo Info")
+    group.add_argument("-r", "--repo", help="Displays the Repo Info")
     group.add_argument("-l","--list", action="store_true", help="Display all the Repo Names")
     args = parser.parse_args()
 
-    if (args.rinfo != None):
-        rInfo(args.name, args.rinfo, 0)
+    if (args.repo != None):
+        rInfo(args.name, args.repo, 0)
         print("\n")
     elif (args.uinfo):
         uInfo(args.name)
         print("\n")
     elif (args.list):
-        rInfo(args.name, args.rinfo, 1)
+        rInfo(args.name, args.repo, 1)
         print("\n")
     else:
         print ("err st\n")
