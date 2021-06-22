@@ -20,17 +20,17 @@ $ curl https://api.github.com/Fifirex
 > }
 ```
 
-If you add the `-i` (`INFO`) tag we see that the `Content-Type` is `application/json`. Which implies that the returned objectafter a 'GET' command will be of 'json' format, this makes it easier for us to access information due to the presence of key attributes.
+If you add the `-i` (`INFO`) tag we see that the `Content-Type` is `application/json`. Which implies that the returned objectafter a `GET` command will be of `json` format, this makes it easier for us to access information due to the presence of key attributes.
 
-This can be usd to access User information and Public Repositaries from GitHub. To access Private Repos and more info on the user, we can generate a [Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) with valid scopes to access the respective data.
+This can be used to access User information and Public Repositaries from GitHub. To access Private Repos and more info on the user, we can generate a [Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) with valid scopes to access the respective data.
 
-Using the Access token we can access Information on all the Repos by using the following command for a specific username
+Using the Access token we can access Information on all the Repos by running the following command for a specific username
 
 ```
 curl -H “Authorization: token MYTOKEN” "https://api.github.com/search/repositories?q=user:MYUSERNAME"
 ```
 
-This is all we need to know about the API to build our CLI.
+This is all we need to know about the REST API to build our CLI.
 
 ## <a name="form">Building the CLI </a>
 To get the information from the API servers we use `GET` from the `requests` module.
@@ -46,11 +46,11 @@ data = requests.get (f"https://api.github.com/users/{user}", headers = auth).jso
 
 The interactive interface is then built on these foundations, which was then made into an Unix Executable File to run it through the Terminal.
 
-We use `argparse` to convert the executable file into a useful Command Line Interface. To find how it works we run
+We use `argparse` to convert the executable file into a useful Command Line Interface. To find how it works we run the following
 
 ```
 $ FifiGit --help
-usage: FifiGit [-h] [-u | -r REPO | -l] name
+usage: FifiGit [-h] [-u | -r REPO | -l | -ls] name
 
 GitHub API interface
 
@@ -62,6 +62,7 @@ optional arguments:
   -u, --uinfo           Display only User Info
   -r REPO, --repo REPO  Displays the Repo Info
   -l, --list            Display all the Repo Names
+  -ls, --sort_list      Display all the Repo Names sorted in Alpha
 
 Enjoy the program! :)
 ```
@@ -72,12 +73,13 @@ These are the possible flags for the interface:
 * `--uinfo` - It takes the argument `name` and displays the UserInfo for the respective User.
 * `--repo` - It takes 2 arguments, `name` and `REPO` and searches for the repository by that name on the User's account. If found, it displays the basic information about it.
 * `--list` - It takes the argument `name` and displays the list all the Repositories under the User Account.
+* `--sort_list` - It takes the argument `name` and displays the list all the Repositories sorted Alphabetically.
 
-> Note: workings of each flag explained in [this]("time") section.
+Workings of each flag explained in [this]("time") section.
 
 > Note: GitHub API restricts repo search results to the first `1000`, there is a warning thrown if `total_count > 1000`, as all the Repos cannot be listed or searched, in case of a huge Repo Base. 
 
-These 3 arguments are grouped using the `add_mutually_exclusive_group()` instance, so only one of them can be activated at a single point. (Hence the `|` in the `help` menu)
+These 4 arguments are grouped using the `add_mutually_exclusive_group()` instance, so only one of them can be activated at a single point. (Hence the `|` in the `help` menu)
 
 The `help` menu is filled with the following statement
 
@@ -128,7 +130,7 @@ The `--repo` tag has been modified a lot to reduce the time taken in searching t
 
 This implies that while searching on a full repo base (`1000 repos`), it would only take `10` `GET` commands in the worst case scenario. And by pre loading the pages and searching, the probability of hitting the worst case is reduced. 
 
-The worst case scenario was measured by searching a non-existent Repo at `google`
+The worst case scenario time was measured by searching a non-existent Repo at `google`
 
 ```
 $ FifiGit google -r hi
@@ -139,7 +141,7 @@ $ FifiGit google -r hi
  =============================
 
  Total count : [2006]
- Warning: API limits search to first 1000 results only (some Repos might be missed)
+ Warning: API limits search to first 1000 results only (1006 Repos will be missed)
 
  Proceed, dispite the Warning? (y/n): y
 
@@ -151,6 +153,8 @@ $ FifiGit google -r hi
 ```
 
 This time is the worst case time, and is a marvelous improvement over the previous times.
+
+>WARNING: Using the --sort_list tag is a major hitting on your machine if the Repo base is huge. As the entire base must be sorted to display even a small portion of it. Use it only if absolutely necessary.
 
 ## <a name="install">Get the Code! </a>
 
