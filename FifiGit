@@ -1,4 +1,5 @@
 #!/usr/local/bin/python3
+from typing import SupportsBytes
 import requests
 import sys
 import os
@@ -18,6 +19,17 @@ def info (url):
     for pnum in range(1,600):
         urlN = url + f"?page={pnum}"
         point = requests.get(urlN, headers = auth).json()
+        if(point == []):
+            break
+        else:
+            listData.append(point)
+    return listData
+
+def info2 (url):
+    listData = []
+    for pnum in range(1,600):
+        urlN = url + f"&page={pnum}"
+        point = requests.get(urlN, headers = auth).json()['items']
         if(point == []):
             break
         else:
@@ -107,14 +119,14 @@ def uInfo(user):
 
 def rInfo(user, name, state):
     chckUser(user)
+    response2 = requests.get(f"https://api.github.com/search/repositories?q=user:{user}&per_page=1", headers = auth).json()
     print ("\n =============================")
     print ("           REPO INFO")
     print ("       unforked only  :)")
     print (" =============================\n")
+    print (" Total count : [" + str(response2['total_count']) + "]")
     if(state == 0):
         resp = 'y'
-        response2 = requests.get(f"https://api.github.com/search/repositories?q=user:{user}&per_page=1", headers = auth).json()
-        print (" Total count : [" + str(response2['total_count']) + "]")
         if (response2['total_count'] > 1000):
             print(" Warning: API limits search to first 1000 results only ({} Repos will be missed)".format(response2['total_count'] - 1000))
             resp = input("\n Proceed, dispite the Warning? (y/n): ")
@@ -141,9 +153,8 @@ def rInfo(user, name, state):
                 print ("\n Repo not found\n Hint: you must own the repo (not forked)")
                 if (response2['total_count'] > 1000):
                     print(" Hint: the repos exceeded API limit, so it must've missed there")
+
     elif(state == 1):
-        response2 = requests.get(f"https://api.github.com/search/repositories?q=user:{user}&per_page=1", headers = auth).json()
-        print (" Total count : [" + str(response2['total_count']) + "]")
         if (response2['total_count'] == 0):
             print(" NULL")
         else:
@@ -185,7 +196,65 @@ def rInfo(user, name, state):
                         break
                 else:
                     break
-                        
+    
+    elif (state == 2):
+        if (response2['total_count'] == 0):
+            print(" NULL")
+        else:
+            tot = 0
+            i = 1
+            resp = 'y'
+            if (response2['total_count'] > 1000):
+                print(" Warning: API limits search to first 1000 results only ({} Repos will be missed)".format(response2['total_count'] - 1000))
+                print(" Warning: Sorting and Displaying will take a LOT of time")
+                resp = input("\n Proceed, dispite the Warning? (y/n): ")
+                resp = invalid(resp)
+                tot = 100
+            elif (response2['total_count'] > 100):
+                print(" Warning: Sorting and Displaying will take a *LOT* of time")
+                resp = input("\n Proceed, dispite the Warning? (y/n): ")
+                resp = invalid(resp)
+            if (tot == 0):
+                tot = (int)(response2['total_count']/10) + (1 if (response2['total_count']%10 != 0) else 0)
+            if (resp == 'y' or resp == 'Y'):
+                repo2 = info2(f"https://api.github.com/search/repositories?q=user:{user}&per_page=100")
+                repo_names=[]
+                for page in repo2:
+                    for repo in page:
+                        try:
+                            repo_names.append(repo['full_name'].split("/")[1])
+                        except:
+                            pass
+                repo_names.sort(key=str.lower)
+                while (resp == 'y' or resp == 'Y'):
+                    print ("\n Page: {} of {}".format(i, tot))
+                    for j in range(10*(i-1), (10*i if (i!=tot) else response2['total_count'])):
+                        print (" * " + repo_names[j])
+                    if (i < tot):
+                        resp = input("\n Next Page? (y/n/goto(g)): ")
+                        if (resp == 'g' or resp == 'G'):
+                            page = input(" Enter the page no.: ")
+                            while (page.isnumeric() == False or (int(page)<1 or int(page)>tot)):
+                                print(" Invalid Input")
+                                page = input("\n Enter the page no.: ")
+                            i = int(page)
+                            resp = 'y'
+                        else:
+                            resp = invalid(resp)
+                            i+=1
+                    elif (i == tot and tot!=1):
+                        resp = input("\n Goto a Page? (y/n): ")
+                        resp = invalid(resp)
+                        if (resp == 'y' or resp == 'Y'):
+                            page = input(" Enter the page no.: ")
+                            while (page.isnumeric() == False or (int(page)<1 or int(page)>tot)):
+                                print(" Invalid Input")
+                                page = input("\n Enter the page no.: ")
+                            i = int(page)
+                        else:
+                            break
+                    else:
+                        break
 
 def main():
     parser = argparse.ArgumentParser(description = "GitHub API interface",
@@ -195,6 +264,7 @@ def main():
     group.add_argument("-u", "--uinfo", action="store_true", help="Display only User Info")
     group.add_argument("-r", "--repo", help="Displays the Repo Info")
     group.add_argument("-l","--list", action="store_true", help="Display all the Repo Names")
+    group.add_argument("-ls","--sort_list", action="store_true", help="Display all the Repo Names sorted in Alpha")
     args = parser.parse_args()
 
     if (args.repo != None):
@@ -205,6 +275,9 @@ def main():
         print("\n")
     elif (args.list):
         rInfo(args.name, args.repo, 1)
+        print("\n")
+    elif (args.sort_list):
+        rInfo(args.name, args.repo, 2)
         print("\n")
     else:
         print ("err st\n")
