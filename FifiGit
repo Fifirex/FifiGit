@@ -157,7 +157,7 @@ def rInfo(user, name, state):
         if (resp == 'y' or resp == 'Y'):
             query = queryTemplate.substitute(user = "\"{}\"".format(user), repo = "\"{}\"".format(name), num = 100)
             result = run_query(query) 
-            if(result["data"]["repository"] != None):
+            if(result["data"]["repository"] != None and result["data"]["repository"]["isFork"]!=True):
                 print ("\n Name : {}/{}".format(user, name))
                 print (" Private : " + ("True" if result["data"]["repository"]["isPrivate"] else "False"))
                 print (" Fork Count : " + str(result["data"]["repository"]["forks"]["totalCount"]))
@@ -171,7 +171,7 @@ def rInfo(user, name, state):
                     print (" Topics : " + str(len(topic)))
                     for i in range(len(topic)):
                         print (" * {}".format(topic[i]["topic"]["name"]))
-                        
+
                 if (result["data"]["repository"]["licenseInfo"] == None):
                     print (" License : NULL")
                 else:

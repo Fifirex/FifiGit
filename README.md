@@ -32,6 +32,50 @@ curl -H “Authorization: token MYTOKEN” "https://api.github.com/search/reposi
 
 This is all we need to know about the REST API to build our CLI.
 
+## GitHub GraphQL API
+This is the v4.0 API used by GitHub. [GraphQL](https://docs.github.com/en/graphql) uses one endpoint `query` rather than multiple endpoint REST uses. This reduces the number of `GET` calls in the program and thus makes it faster.
+
+To list out the topics of a particular Repo, only GraphQL can be used as it is a Preview Feature, introduced in API v4.0. So, I had to implement this in my `search_repo` flag, as Listing out of Topics of a Repo was asked. 
+
+I integrated the entire `search_repo` module with this API, so only one `GET` call was required, with the following query structure
+
+```
+queryTemplate = Template(
+"""
+{
+    repository(name: $repo, owner: $user) {
+        licenseInfo {
+            key
+            name
+            url
+            spdxId
+        }
+        isFork
+        isPrivate
+        forks {
+            totalCount
+        }
+        stargazers {
+            totalCount
+        }
+        watchers {
+            totalCount
+        }
+        repositoryTopics(first: $num) {
+            nodes {
+                topic {
+                    name
+                }
+            }
+        }
+    }
+}"""
+)
+```
+The reason I did not use this API throughout the CLI is it has a rate limitation over the `first` parameter of `100`. Hence, Repos more than `100` cannot be enquired, which limits the functionality by a factor of `10` (maximum count in REST API is `1000`).
+
+[Substantial efforts](#time) were then made to make the REST API `GET` the most effective.
+
 ## <a name="form">Building the CLI </a>
 To get the information from the API servers we use `GET` from the `requests` module.
 
