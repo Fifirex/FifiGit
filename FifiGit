@@ -28,11 +28,71 @@ queryTemplate = Template(
     watchers {
       totalCount
     }
-    repositoryTopics(first: $num) {
+    repositoryTopics(first: 100) {
       nodes {
         topic {
           name
         }
+      }
+    }
+  }
+}"""
+)
+
+queryTemplate2 = Template(
+"""{
+  user(login: $user) {
+    name
+    avatarUrl
+    url
+    email
+    bio
+    followers(first: 100) {
+      nodes {
+        login
+      }
+      totalCount
+      edges {
+        cursor
+      }
+    }
+    following(first: 100) {
+      nodes {
+        login
+      }
+      totalCount
+      edges {
+        cursor
+      }
+    }
+  }
+}"""
+)
+
+queryTemplate3 = Template(
+"""{
+  user(login: $user) {
+    followers(first: 100, after: $curso) {
+      nodes {
+        login
+      }
+      edges {
+        cursor
+      }
+    }
+  }
+}"""
+)
+
+queryTemplate4 = Template(
+"""{
+  user(login: $user) {
+    following(first: 100, after: $curso) {
+      nodes {
+        login
+      }
+      edges {
+        cursor
       }
     }
   }
@@ -45,18 +105,7 @@ def screen_clear():
     else:
         _ = os.system('cls')
 
-def info (url):
-    listData = []
-    for pnum in range(1,600):
-        urlN = url + f"?page={pnum}"
-        point = requests.get(urlN, headers = auth).json()
-        if(point == []):
-            break
-        else:
-            listData.append(point)
-    return listData
-
-def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
+def run_query(query):
     request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=auth)
     if request.status_code == 200:
         return request.json()
@@ -90,55 +139,65 @@ def chckUser (user):
     url = f"https://api.github.com/users/{user}"
     response = requests.get(url, headers = auth)
     if response:
-        data = response.json()
-        return data
+        pass
     else:
         sys.exit("\n User not found\n")
 
 
-def uInfo(user):
-    data = chckUser(user)
+def uInfo(user, state):
     print ("\n =============================")
     print ("           USER INFO")
     print (" =============================\n")
+    query = queryTemplate2.substitute(user = "\"{}\"".format(user))
+    result = run_query(query)["data"]["user"]
+    if (result == None):
+        sys.exit("\n User not found\n")
     print (" Username: " + user)
-    print (" Name : " + (data['name'] if data['name'] != None else "NULL"))
-    print (" Avatar URL : " + data['avatar_url'])
-    print (" GitHub Hnadle : " + data['url'])
-    print (" Email : " + (data['email'] if data['email'] != None else "NULL"))
-    print (" BioData : " + (data['bio'] if data['bio'] != None else "NULL"))
+    print (" Name : " + (result["name"] if result["name"] != None else "NULL"))
+    print (" Avatar URL : " + result["avatarUrl"])
+    print (" GitHub Hnadle : " + result["url"])
+    print (" Email : " + (result["email"] if (result["email"] != "" and result["email"] != None) else "NULL"))
+    print (" BioData : " + (result["bio"] if result["bio"] != None else "NULL"))
 
-    print ("\n Followers : [" + str(data['followers']) + "]")
-    if (data['followers'] != 0):
-        if (data['followers'] >= 25):
-            ch = input(" Do u want the usernames? (y/n): ")
-            ch = invalid(ch)
-        else:
-            ch = 'y'
-        if (ch == 'y' or ch == 'Y'):
-            followers = info (f"https://api.github.com/users/{user}/followers")
-            for page in followers:
-                for cont in page:
-                    try:
-                        print (" * " + cont['login'])
-                    except:
-                        pass
+    if (state == 0):
 
-    print ("\n Following : [" + str(data['following']) + "]")
-    if (data['following'] != 0):
-        if (data['following'] >= 25):
-            ch = input(" Do u want the usernames? (y/n): ")
-            ch = invalid(ch)
-        else:
-            ch = 'y'
-        if (ch == 'y' or ch == 'Y'):
-            following = info (f"https://api.github.com/users/{user}/following")
-            for page in following:
-                for cont in page:
-                    try:
-                        print (" * " + cont['login'])
-                    except:
-                        pass
+        followers = result["followers"]["nodes"]
+        tot = result["followers"]["totalCount"]
+        print ("\n Followers : [" + str(tot) + "]")
+        if (tot != 0):
+            if (tot >= 25):
+                ch = input(" Do u want the usernames? (y/n): ")
+                ch = invalid(ch)
+            else:
+                ch = 'y'
+            if (ch == 'y' or ch == 'Y'):
+                iter = (int)(tot/100) + (1 if (tot%100 != 0) else 0)
+                for j in range(iter):
+                    if (j!=0):
+                        curs = result["followers"]["edges"][99]["cursor"]
+                        query = queryTemplate3.substitute(user = "\"{}\"".format(user), curso = "\"{}\"".format(curs))
+                        followers = run_query(query)["data"]["user"]["followers"]["nodes"]
+                    for i in range(len(followers)):
+                        print(" * {}".format(followers[i]["login"]))
+
+        following = result["following"]["nodes"]
+        tot = result["following"]["totalCount"]
+        print ("\n Following : [" + str(tot) + "]")
+        if (tot != 0):
+            if (tot >= 25):
+                ch = input(" Do u want the usernames? (y/n): ")
+                ch = invalid(ch)
+            else:
+                ch = 'y'
+            if (ch == 'y' or ch == 'Y'):
+                iter = (int)(tot/100) + (1 if (tot%100 != 0) else 0)
+                for j in range(iter):
+                    if (j!=0):
+                        curs = result["following"]["edges"][99]["cursor"]
+                        query = queryTemplate4.substitute(user = "\"{}\"".format(user), curso = "\"{}\"".format(curs))
+                        following = run_query(query)["data"]["user"]["following"]["nodes"]
+                    for i in range(len(following)):
+                        print(" * {}".format(following[i]["login"]))
 
 def rInfo(user, name, state):
     chckUser(user)
@@ -155,7 +214,7 @@ def rInfo(user, name, state):
             resp = input("\n Proceed, dispite the Warning? (y/n): ")
             resp = invalid(resp)
         if (resp == 'y' or resp == 'Y'):
-            query = queryTemplate.substitute(user = "\"{}\"".format(user), repo = "\"{}\"".format(name), num = 100)
+            query = queryTemplate.substitute(user = "\"{}\"".format(user), repo = "\"{}\"".format(name))
             result = run_query(query) 
             if(result["data"]["repository"] != None and result["data"]["repository"]["isFork"]!=True):
                 print ("\n Name : {}/{}".format(user, name))
@@ -292,7 +351,8 @@ def main():
                                      epilog = "Enjoy the program! :)")
     group = parser.add_mutually_exclusive_group()
     parser.add_argument("name", help="Initiates the program for the given user")
-    group.add_argument("-u", "--uinfo", action="store_true", help="Display only User Info")
+    group.add_argument("-u", "--uinfo", action="store_true", help="Display the User Info")
+    group.add_argument("-ub", "--uinfo_basic", action="store_true", help="Display the basic User Info only")
     group.add_argument("-r", "--repo", help="Displays the Repo Info")
     group.add_argument("-l","--list", action="store_true", help="Display all the Repo Names")
     group.add_argument("-ls","--sort_list", action="store_true", help="Display all the Repo Names sorted in Alpha")
@@ -302,13 +362,16 @@ def main():
         rInfo(args.name, args.repo, 0)
         print("\n")
     elif (args.uinfo):
-        uInfo(args.name)
+        uInfo(args.name, 0)
         print("\n")
     elif (args.list):
         rInfo(args.name, args.repo, 1)
         print("\n")
     elif (args.sort_list):
         rInfo(args.name, args.repo, 2)
+        print("\n")
+    elif (args.uinfo_basic):
+        uInfo(args.name, 1)
         print("\n")
     else:
         print ("err st\n")
