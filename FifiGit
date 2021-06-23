@@ -1,12 +1,11 @@
 #!/usr/local/bin/python3
 
-import string
 import requests
 import sys
 import argparse
 from string import Template
 
-Token = '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' 
+Token = 'TOKEN_GOES_HERE' 
 auth = {'Authorization':"token " + Token}
 
 #--repo

@@ -290,30 +290,30 @@ For example, running the above [query](#query) for `--list`, in a specific itera
 This is the output:
 ```js
 {
-  "data": {
-    "user": {
-      "repositories": {
-        "nodes": [
-          {
-            "name": "my-first-rep",
-            "isFork": false
-          },
-          {
-            "name": "github-slideshow",
-            "isFork": false
-          }
-        ],
-        "edges": [
-          {
-            "cursor": "Y3Vyc29yOnYyOpIAzhP1MMU="
-          },
-          {
-            "cursor": "Y3Vyc29yOnYyOpIAzhMJqqM="
-          }
-        ]
-      }
+    "data": {
+        "user": {
+            "repositories": {
+                "nodes": [
+                    {
+                        "name": "my-first-rep",
+                        "isFork": false
+                    },
+                    {
+                        "name": "github-slideshow",
+                        "isFork": false
+                    }
+                ],
+                "edges": [
+                    {
+                        "cursor": "Y3Vyc29yOnYyOpIAzhP1MMU="
+                    },
+                    {
+                        "cursor": "Y3Vyc29yOnYyOpIAzhMJqqM="
+                    }
+                ]
+            }
+        }
     }
-  }
 }
 ```
 
