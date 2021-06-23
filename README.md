@@ -41,7 +41,7 @@ I integrated the entire `--repo` module with this API, so only one `GET` call wa
 
 ```js
 query ($repo: String!, $user: String!){
-    repository(name: $repo, owner: $user) {
+    repository (name: $repo, owner: $user) {
         licenseInfo {
             key
             name
@@ -73,7 +73,7 @@ I have also integrated the `uinfo` module with GraphQL to reduce query calls ove
 
 ```js
 query ($user: String!){
-  user(login: $user) {
+  user (login: $user) {
     name
     avatarUrl
     url
@@ -104,7 +104,7 @@ To counter the limitation over rate limitation of `100`, I used two more query t
 
 ```js
 query ($repo: String!, $curso: String!){
-  user(login: $user) {
+  user (login: $user) {
     followers(first: 100, after: $curso) {
       nodes {
         login
@@ -253,7 +253,7 @@ Another major improvement in the time delay was done by switching over to GraphQ
 
 > Note : This is a Unix Executable File, which can be run only on Unix-like OS (Linux or MacOS). For using the file on Windows, you can extract the Python core and convert it to a .exe file, and add it to the PATH in a similar fashion. 
 
-> Note : For API access, we need an access token (mentioned in Section 1). Generate one and add it to the **line 7** in the code. 
+> Note : For API access, we need an access token (mentioned in Section 1). Generate one and add it to the **line 8** in the code. 
 
 First, we need th code. Clone the repository into a Directory of your choice using
 
