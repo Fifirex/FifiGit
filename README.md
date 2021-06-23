@@ -116,7 +116,7 @@ But...
 
 The entire program was first built in the REST API format, and it used to interact with the server over multiple redundant calls using `GET`.
 
-I first implemented the GraphQL API in the commit 5b8a0b608be2248e60d6bd7798f00ac2e07ca678 At the same time saving fundamentals used in the previous state were carried forward in the current module.
+I first implemented the GraphQL API in the commit Fifirex/FifiGit@5b8a0b608be2248e60d6bd7798f00ac2e07ca678 At the same time saving fundamentals used in the previous state were carried forward in the current module.
 
 Going about the different tags and the general infrastructure of the code:
 
