@@ -8,8 +8,14 @@ from string import Template
 Token = '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' 
 auth = {'Authorization':"token " + Token}
 
+#--repo
 queryTemplate = Template(
 """{
+  user(login: $user) {
+    repositories(ownerAffiliations: OWNER) {
+      totalCount
+    }
+  }
   repository(name: $repo, owner: $user) {
     licenseInfo {
       key
@@ -39,6 +45,7 @@ queryTemplate = Template(
 }"""
 )
 
+#--uinfo_basic (--uinfo (init))
 queryTemplate2 = Template(
 """{
   user(login: $user) {
@@ -69,6 +76,7 @@ queryTemplate2 = Template(
 }"""
 )
 
+#--uinfo (followers)
 queryTemplate3 = Template(
 """{
   user(login: $user) {
@@ -84,12 +92,48 @@ queryTemplate3 = Template(
 }"""
 )
 
+#--uinfo (following)
 queryTemplate4 = Template(
 """{
   user(login: $user) {
     following(first: 100, after: $curso) {
       nodes {
         login
+      }
+      edges {
+        cursor
+      }
+    }
+  }
+}"""
+)
+
+#--list (init)
+queryTemplate5 = Template(
+"""{
+  user(login: $user) {
+    repositories(first: 10, ownerAffiliations: OWNER, orderBy: {field: $str, direction: $str2}) {
+      totalCount
+      nodes {
+        name
+        isFork
+      }
+      edges {
+        cursor
+      }
+    }
+  }
+}"""
+)
+
+#--list (after)
+queryTemplate6 = Template(
+"""{
+  user(login: $user) {
+    repositories(first: 10, ownerAffiliations: OWNER, orderBy: {field: $str, direction: $str2}, after: $curso) {
+      nodes {
+        name
+        isFork
       }
       edges {
         cursor
@@ -165,18 +209,16 @@ def uInfo(user, state):
         tot = result["followers"]["totalCount"]
         print ("\n Followers : [" + str(tot) + "]")
         if (tot != 0):
-            if (tot >= 25):
-                ch = input(" Do u want the usernames? (y/n): ")
-                ch = invalid(ch)
-            else:
-                ch = 'y'
+            ch = input(" Do u want the usernames? (y/n): ")
+            ch = invalid(ch)
             if (ch == 'y' or ch == 'Y'):
                 iter = (int)(tot/100) + (1 if (tot%100 != 0) else 0)
                 for j in range(iter):
                     if (j!=0):
                         curs = result["followers"]["edges"][99]["cursor"]
                         query = queryTemplate3.substitute(user = "\"{}\"".format(user), curso = "\"{}\"".format(curs))
-                        followers = run_query(query)["data"]["user"]["followers"]["nodes"]
+                        result = run_query(query)["data"]["user"]
+                        followers = result["followers"]["nodes"]
                     for i in range(len(followers)):
                         print(" * {}".format(followers[i]["login"]))
 
@@ -184,167 +226,136 @@ def uInfo(user, state):
         tot = result["following"]["totalCount"]
         print ("\n Following : [" + str(tot) + "]")
         if (tot != 0):
-            if (tot >= 25):
-                ch = input(" Do u want the usernames? (y/n): ")
-                ch = invalid(ch)
-            else:
-                ch = 'y'
+            ch = input(" Do u want the usernames? (y/n): ")
+            ch = invalid(ch)
             if (ch == 'y' or ch == 'Y'):
                 iter = (int)(tot/100) + (1 if (tot%100 != 0) else 0)
                 for j in range(iter):
                     if (j!=0):
                         curs = result["following"]["edges"][99]["cursor"]
                         query = queryTemplate4.substitute(user = "\"{}\"".format(user), curso = "\"{}\"".format(curs))
-                        following = run_query(query)["data"]["user"]["following"]["nodes"]
+                        result = run_query(query)["data"]["user"]
+                        following = result["following"]["nodes"]
                     for i in range(len(following)):
                         print(" * {}".format(following[i]["login"]))
 
-def rInfo(user, name, state):
-    chckUser(user)
-    response2 = requests.get(f"https://api.github.com/search/repositories?q=user:{user}&per_page=1", headers = auth).json()
+def rInfo(user, name, state, orBy = None, fl = None):
+    rtot = 0
     print ("\n =============================")
     print ("           REPO INFO")
-    print ("       unforked only  :)")
     print (" =============================\n")
-    print (" Total count : [" + str(response2['total_count']) + "]")
     if(state == 0):
-        resp = 'y'
-        if (response2['total_count'] > 1000):
-            print(" Warning: API limits search to first 1000 results only ({} Repos will be missed)".format(response2['total_count'] - 1000))
-            resp = input("\n Proceed, dispite the Warning? (y/n): ")
-            resp = invalid(resp)
-        if (resp == 'y' or resp == 'Y'):
-            query = queryTemplate.substitute(user = "\"{}\"".format(user), repo = "\"{}\"".format(name))
-            result = run_query(query) 
-            if(result["data"]["repository"] != None and result["data"]["repository"]["isFork"]!=True):
-                print ("\n Name : {}/{}".format(user, name))
-                print (" Private : " + ("True" if result["data"]["repository"]["isPrivate"] else "False"))
-                print (" Fork Count : " + str(result["data"]["repository"]["forks"]["totalCount"]))
-                print (" Stargazers Count : " + str(result["data"]["repository"]["stargazers"]["totalCount"]))
-                print (" Watchers Count : " + str(result["data"]["repository"]["watchers"]["totalCount"]))
+        query = queryTemplate.substitute(user = "\"{}\"".format(user), repo = "\"{}\"".format(name))
+        result = run_query(query)
+        if (result["data"]["user"] == None):
+            sys.exit("\n User not found\n")
+        rtot = result["data"]["user"]["repositories"]["totalCount"]
+        print (" Total count : [" + str(rtot) + "]") 
+        if(result["data"]["repository"] != None):
+            print ("\n Name : {}/{}".format(user, name) + (" (f)" if result["data"]["repository"]["isFork"] else ""))
+            print (" Private : " + ("True" if result["data"]["repository"]["isPrivate"] else "False"))
+            print (" Fork Count : " + str(result["data"]["repository"]["forks"]["totalCount"]))
+            print (" Stargazers Count : " + str(result["data"]["repository"]["stargazers"]["totalCount"]))
+            print (" Watchers Count : " + str(result["data"]["repository"]["watchers"]["totalCount"]))
 
-                topic = result["data"]["repository"]["repositoryTopics"]["nodes"]
-                if (len(topic) == 0):
-                    print (" Topics : NULL")
-                else:
-                    print (" Topics : " + str(len(topic)))
-                    for i in range(len(topic)):
-                        print (" * {}".format(topic[i]["topic"]["name"]))
-
-                if (result["data"]["repository"]["licenseInfo"] == None):
-                    print (" License : NULL")
-                else:
-                    print (" License : " + result["data"]["repository"]["licenseInfo"]["name"])
-                    print (" * Key : " + result["data"]["repository"]["licenseInfo"]["key"])                                      
-                    print (" * spdx_id : " + result["data"]["repository"]["licenseInfo"]["spdxId"])
-                    print (" * url : " + result["data"]["repository"]["licenseInfo"]["url"])
-
+            topic = result["data"]["repository"]["repositoryTopics"]["nodes"]
+            if (len(topic) == 0):
+                print (" Topics : NULL")
             else:
-                print ("\n Repo not found\n Hint: you must own the repo (not forked)")
-                if (response2['total_count'] > 1000):
-                    print(" Hint: the repos exceeded API limit, so it must've missed there")
+                print (" Topics : " + str(len(topic)))
+                for i in range(len(topic)):
+                    print (" * {}".format(topic[i]["topic"]["name"]))
+
+            if (result["data"]["repository"]["licenseInfo"] == None):
+                print (" License : NULL")
+            else:
+                print (" License : " + result["data"]["repository"]["licenseInfo"]["name"])
+                print (" * Key : " + result["data"]["repository"]["licenseInfo"]["key"])                                      
+                print (" * spdx_id : " + result["data"]["repository"]["licenseInfo"]["spdxId"])
+                print (" * url : " + result["data"]["repository"]["licenseInfo"]["url"])
+
+        else:
+            print ("\n Repo not found\n Hint: you must have the OAuth token to access private Repos")
 
     elif(state == 1):
-        if (response2['total_count'] == 0):
+        if (fl == 1):
+            sorBy = "ASC"
+        else:
+            sorBy = "DESC"
+        query = queryTemplate5.substitute(user = "\"{}\"".format(user), str = orBy, str2 = sorBy)
+        result = run_query(query)
+        if (result["data"]["user"] == None):
+            sys.exit("\n User not found\n")
+        rtot = result["data"]["user"]["repositories"]["totalCount"]
+        print (" Total count : [" + str(rtot) + "]")
+        if (rtot == 0):
             print(" NULL")
         else:
-            resp = 'y'
+            curs = []
+            curs.append(result["data"]["user"]["repositories"]["edges"][9]["cursor"])
             i = 1
-            if (response2['total_count'] > 1000):
-                print(" Warning: API limits search to first 1000 results (100 pages, {} Repos will be missed)".format(response2['total_count'] - 1000))
-                tot = 100
-            else:
-                tot = (int)(response2['total_count']/10) + (1 if (response2['total_count']%10 != 0) else 0)
-            while (resp == 'y' or resp == 'Y'):
+            if (rtot > 1000):
+                print(" Warning: API limits search to first 1000 results (100 pages, {} Repos will be missed)".format(rtot - 1000))
+            tot = (int)(rtot/10) + (1 if (rtot%10 != 0) else 0)
+            repos = result["data"]["user"]["repositories"]["nodes"]
+            flag = 1
+            while (flag == 1):
+                flag = 0
                 print ("\n Page: {} of {}".format(i, tot))
-                repos = disp(f"https://api.github.com/search/repositories?q=user:{user}&per_page=10&page={i}")
-                for page in repos:
-                    for cont in page:
-                        print (" * " + cont['full_name'].split("/")[1])
-                if (i < tot):
-                    resp = input("\n Next Page? (y/n/goto(g)): ")
-                    if (resp == 'g' or resp == 'G'):
-                        page = input(" Enter the page no.: ")
-                        while (page.isnumeric() == False or (int(page)<1 or int(page)>tot)):
-                            print(" Invalid Input")
-                            page = input("\n Enter the page no.: ")
-                        i = int(page)
-                        resp = 'y'
-                    else:
-                        resp = invalid(resp)
-                        i+=1
-                elif (i == tot and tot!=1):
-                    resp = input("\n Goto a Page? (y/n): ")
-                    resp = invalid(resp)
-                    if (resp == 'y' or resp == 'Y'):
-                        page = input(" Enter the page no.: ")
-                        while (page.isnumeric() == False or (int(page)<1 or int(page)>tot)):
-                            print(" Invalid Input")
-                            page = input("\n Enter the page no.: ")
-                        i = int(page)
-                    else:
-                        break
-                else:
+                for j in range(len(repos)):
+                    print (" * " + repos[j]["name"] + (" (f)" if repos[j]["isFork"] else ""))
+                if (tot == 1):
                     break
-    
-    elif (state == 2):
-        if (response2['total_count'] == 0):
-            print(" NULL")
-        else:
-            tot = 0
-            i = 1
-            resp = 'y'
-            if (response2['total_count'] > 1000):
-                print(" Warning: API limits search to first 1000 results only ({} Repos will be missed)".format(response2['total_count'] - 1000))
-                print(" Warning: Sorting and Displaying will take a LOT of time")
-                resp = input("\n Proceed, dispite the Warning? (y/n): ")
-                resp = invalid(resp)
-                tot = 100
-            elif (response2['total_count'] > 100):
-                print(" Warning: Sorting and Displaying will take a *LOT* of time")
-                resp = input("\n Proceed, dispite the Warning? (y/n): ")
-                resp = invalid(resp)
-            if (tot == 0):
-                tot = (int)(response2['total_count']/10) + (1 if (response2['total_count']%10 != 0) else 0)
-            if (resp == 'y' or resp == 'Y'):
-                repo2 = info2(f"https://api.github.com/search/repositories?q=user:{user}&per_page=100")
-                repo_names=[]
-                for page in repo2:
-                    for repo in page:
-                        try:
-                            repo_names.append(repo['full_name'].split("/")[1])
-                        except:
-                            pass
-                repo_names.sort(key=str.lower)
-                while (resp == 'y' or resp == 'Y'):
-                    print ("\n Page: {} of {}".format(i, tot))
-                    for j in range(10*(i-1), (10*i if (i!=tot) else response2['total_count'])):
-                        print (" * " + repo_names[j])
-                    if (i < tot):
-                        resp = input("\n Next Page? (y/n/goto(g)): ")
-                        if (resp == 'g' or resp == 'G'):
-                            page = input(" Enter the page no.: ")
-                            while (page.isnumeric() == False or (int(page)<1 or int(page)>tot)):
-                                print(" Invalid Input")
-                                page = input("\n Enter the page no.: ")
-                            i = int(page)
-                            resp = 'y'
+                if (i == 1):
+                    resp = input("\n Navigation (next (n)/ exit(e)): ")
+                    while (resp!= "n" and resp!= "N" and resp!= "e" and resp!="E"):
+                        print(" Invalid")
+                        resp = input("\n Navigation (next (n)/ exit(e)): ")
+                    if (resp != 'e' and resp!= 'E'):
+                        flag = 1
+                        query = queryTemplate6.substitute(user = "\"{}\"".format(user), str = orBy, str2 = sorBy, curso = "\"{}\"".format(curs[0]))
+                        result = run_query(query)
+                        if (len(curs) == 1 and i!= tot-1):
+                            curs.append(result["data"]["user"]["repositories"]["edges"][9]["cursor"])
+                        repos = result["data"]["user"]["repositories"]["nodes"]
+                        i += 1
+                elif (i < tot):
+                    resp = input("\n Navigation (next (n)/ previous (p)/ exit (e)): ")
+                    while (resp!= "n" and resp!= "N" and resp!= "p" and resp!= "P" and resp!= "e" and resp!="E"):
+                        print(" Invalid")
+                        resp = input("\n Navigation (next (n)/ previous (p)/ exit (e)): ")
+                    if (resp != 'e' and resp!= 'E'):
+                        if (resp == 'n' or resp == 'N'):
+                            flag = 1
+                            query = queryTemplate6.substitute(user = "\"{}\"".format(user), str = orBy, str2 = sorBy, curso = "\"{}\"".format(curs[i-1]))
+                            result = run_query(query)
+                            if (i == len(curs) and i!= tot-1):
+                                curs.append(result["data"]["user"]["repositories"]["edges"][9]["cursor"])
+                            repos = result["data"]["user"]["repositories"]["nodes"]
+                            i += 1
                         else:
-                            resp = invalid(resp)
-                            i+=1
-                    elif (i == tot and tot!=1):
-                        resp = input("\n Goto a Page? (y/n): ")
-                        resp = invalid(resp)
-                        if (resp == 'y' or resp == 'Y'):
-                            page = input(" Enter the page no.: ")
-                            while (page.isnumeric() == False or (int(page)<1 or int(page)>tot)):
-                                print(" Invalid Input")
-                                page = input("\n Enter the page no.: ")
-                            i = int(page)
+                            flag = 1
+                            if (i == 2):
+                                query = queryTemplate5.substitute(user = "\"{}\"".format(user), str = orBy, str2 = sorBy)
+                            else:
+                                query = queryTemplate6.substitute(user = "\"{}\"".format(user), str = orBy, str2 = sorBy, curso = "\"{}\"".format(curs[i-3]))
+                            result = run_query(query)
+                            repos = result["data"]["user"]["repositories"]["nodes"]
+                            i -= 1
+                else:
+                    resp = input("\n Navigation (previous (p)/ exit(e)): ")
+                    while (resp!= "p" and resp!= "P" and resp!= "e" and resp!="E"):
+                        print(" Invalid")
+                        resp = input("\n Navigation (previous (p)/ exit(e)): ")
+                    if (resp != 'e' and resp!= 'E'):
+                        flag = 1
+                        if (i == 2):
+                            query = queryTemplate5.substitute(user = "\"{}\"".format(user), str = orBy, str2 = sorBy)
                         else:
-                            break
-                    else:
-                        break
+                            query = queryTemplate6.substitute(user = "\"{}\"".format(user), str = orBy, str2 = sorBy, curso = "\"{}\"".format(curs[i-3]))
+                        result = run_query(query)
+                        repos = result["data"]["user"]["repositories"]["nodes"]
+                        i -= 1
 
 def main():
     parser = argparse.ArgumentParser(description = "GitHub API interface",
@@ -354,8 +365,9 @@ def main():
     group.add_argument("-u", "--uinfo", action="store_true", help="Display the User Info")
     group.add_argument("-ub", "--uinfo_basic", action="store_true", help="Display the basic User Info only")
     group.add_argument("-r", "--repo", help="Displays the Repo Info")
-    group.add_argument("-l","--list", action="store_true", help="Display all the Repo Names")
-    group.add_argument("-ls","--sort_list", action="store_true", help="Display all the Repo Names sorted in Alpha")
+    group.add_argument("-la","--alpha_list", action='store', type=int, choices=[1, -1])
+    group.add_argument("-ls","--star_list", action='store', type=int, choices=[1, -1])
+    group.add_argument("-lc","--created_list", action='store', type=int, choices=[1, -1])
     args = parser.parse_args()
 
     if (args.repo != None):
@@ -364,11 +376,14 @@ def main():
     elif (args.uinfo):
         uInfo(args.name, 0)
         print("\n")
-    elif (args.list):
-        rInfo(args.name, args.repo, 1)
+    elif (args.alpha_list != None):
+        rInfo(args.name, args.repo, 1, "NAME", args.alpha_list)
         print("\n")
-    elif (args.sort_list):
-        rInfo(args.name, args.repo, 2)
+    elif (args.star_list != None):
+        rInfo(args.name, args.repo, 1, "STARGAZERS", args.star_list)
+        print("\n")
+    elif (args.created_list != None):
+        rInfo(args.name, args.repo, 1, "CREATED_AT", args.created_list)
         print("\n")
     elif (args.uinfo_basic):
         uInfo(args.name, 1)
