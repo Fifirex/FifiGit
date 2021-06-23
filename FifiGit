@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3
 
+import string
 import requests
 import sys
 import argparse
@@ -207,7 +208,7 @@ def uInfo(user, state):
                     for i in range(len(following)):
                         print(" * {}".format(following[i]["login"]))
 
-def rInfo(user, name, state, orBy = None, fl = None):
+def rInfo(user, name, state, orBy = None, sorBy = None):
     rtot = 0
     print ("\n =============================")
     print ("           REPO INFO")
@@ -246,10 +247,6 @@ def rInfo(user, name, state, orBy = None, fl = None):
             print ("\n Repo not found\n Hint: you must have the OAuth token to access private Repos")
 
     elif(state == 1):
-        if (fl == 1):
-            sorBy = "ASC"
-        else:
-            sorBy = "DESC"
         query = queryTemplate5.substitute(user = "\"{}\"".format(user), str = orBy, str2 = sorBy)
         result = run_query(query)
         if (result["data"]["user"] == None):
@@ -333,9 +330,11 @@ def main():
     group.add_argument("-u", "--uinfo", action="store_true", help="Display the User Info")
     group.add_argument("-ub", "--uinfo_basic", action="store_true", help="Display the basic User Info only")
     group.add_argument("-r", "--repo", help="Displays the Repo Info")
-    group.add_argument("-la","--alpha_list", action='store', type=int, choices=[1, -1])
-    group.add_argument("-ls","--star_list", action='store', type=int, choices=[1, -1])
-    group.add_argument("-lc","--created_list", action='store', type=int, choices=[1, -1])
+    group.add_argument("-la","--alpha_list", action='store', choices=["DESC", "ASC"], help="lists all the Repos in Alpha order.")
+    group.add_argument("-ls","--star_list", action='store', choices=["DESC", "ASC"], help="lists all the Repos in Stargazers order.")
+    group.add_argument("-lc","--created_list", action='store', choices=["DESC", "ASC"], help="lists all the Repos in DOC order.")
+    group.add_argument("-lu","--updated_list", action='store', choices=["DESC", "ASC"], help="lists all the Repos in DOU order.")
+    group.add_argument("-lp","--pushed_list", action='store', choices=["DESC", "ASC"], help="lists all the Repos in DOP order.")
     args = parser.parse_args()
 
     if (args.repo != None):
@@ -352,6 +351,12 @@ def main():
         print("\n")
     elif (args.created_list != None):
         rInfo(args.name, args.repo, 1, "CREATED_AT", args.created_list)
+        print("\n")
+    elif (args.updated_list != None):
+        rInfo(args.name, args.repo, 1, "UPDATED_AT", args.updated_list)
+        print("\n")
+    elif (args.pushed_list != None):
+        rInfo(args.name, args.repo, 1, "PUSHED_AT", args.pushed_list)
         print("\n")
     elif (args.uinfo_basic):
         uInfo(args.name, 1)
