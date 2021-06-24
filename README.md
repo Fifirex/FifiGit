@@ -1,6 +1,8 @@
 # FifiGit
 > NOTE: Before we get started, you need to generate [Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) to access the GitHub API. Generate one and add it to the **line 8** of the code.
 
+> NOTE: You aren't allowed to commit your Access token, else it gets revoked. While this is a security feature, it also makes it difficult to debug your file locally and then push a modified version. I came across a solution for this and have written it in a [gist](https://gist.github.com/Fifirex/e82b2a8107edfd1ffcaf38adeb4caacb). Do check that out!
+
 This is a CLI to interact with the [GitHub GraphQL API](https://docs.github.com/en/graphql) and the [GitHub REST API](https://docs.github.com/en/rest) (not anymore, but worth a mention). The core of the program is build upon Python, mainly using the [requests](https://pypi.org/project/requests/) and the [argparse](https://docs.python.org/3/library/argparse.html) library. The `request` library is used to `GET` data from the API server and import it to the Python code, while the `argparse` library is used to build the Command Line Interface, using arguement flags.
 
 Feel free to jump to the [Installation](#install) if you want to skip over the explanation.
