@@ -256,7 +256,8 @@ def rInfo(user, name, state, orBy = None, sorBy = None):
             print(" NULL")
         else:
             curs = []
-            curs.append(result["data"]["user"]["repositories"]["edges"][9]["cursor"])
+            if(rtot > 10):
+                curs.append(result["data"]["user"]["repositories"]["edges"][9]["cursor"])
             i = 1
             if (rtot > 1000):
                 print(" Warning: API limits search to first 1000 results (100 pages, {} Repos will be missed)".format(rtot - 1000))
