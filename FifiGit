@@ -148,7 +148,7 @@ def run_query(query):
     if request.status_code == 200:
         return request.json()
     else:
-        raise Exception("Query failed to run by returning code of {}. {}".format(request.status_code, query))
+        sys.exit(" Not a Valid Token\n")
 
 def invalid (ch):
     while (ch!= "y" and ch!= "Y" and ch!= "n" and ch!="N"):
