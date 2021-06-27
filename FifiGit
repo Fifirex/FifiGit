@@ -11,135 +11,135 @@ auth = {'Authorization':"token " + Token}
 #--repo
 queryTemplate = Template(
 """{
-  user(login: $user) {
-    repositories(ownerAffiliations: OWNER) {
-      totalCount
-    }
-  }
-  repository(name: $repo, owner: $user) {
-    licenseInfo {
-      key
-      name
-      url
-      spdxId
-    }
-    isFork
-    isPrivate
-    forks {
-      totalCount
-    }
-    stargazers {
-      totalCount
-    }
-    watchers {
-      totalCount
-    }
-    repositoryTopics(first: 100) {
-      nodes {
-        topic {
-          name
+    user(login: $user) {
+        repositories(ownerAffiliations: OWNER) {
+            totalCount
         }
-      }
     }
-  }
+    repository(name: $repo, owner: $user) {
+        licenseInfo {
+            key
+            name
+            url
+            spdxId
+        }
+        isFork
+        isPrivate
+        forks {
+            totalCount
+        }
+        stargazers {
+            totalCount
+        }
+        watchers {
+            totalCount
+        }
+        repositoryTopics(first: 100) {
+            nodes {
+                topic {
+                    name
+                }
+            }
+        }
+    }
 }"""
 )
 
 #--uinfo_basic (--uinfo (init))
 queryTemplate2 = Template(
 """{
-  user(login: $user) {
-    name
-    avatarUrl
-    url
-    email
-    bio
-    followers(first: 100) {
-      nodes {
-        login
-      }
-      totalCount
-      edges {
-        cursor
-      }
+    user(login: $user) {
+        name
+        avatarUrl
+        url
+        email
+        bio
+        followers(first: 100) {
+            nodes {
+                login
+            }
+            totalCount
+            edges {
+                cursor
+            }
+        }
+        following(first: 100) {
+            nodes {
+                login
+            }
+            totalCount
+            edges {
+                cursor
+            }
+        }
     }
-    following(first: 100) {
-      nodes {
-        login
-      }
-      totalCount
-      edges {
-        cursor
-      }
-    }
-  }
 }"""
 )
 
 #--uinfo (followers)
 queryTemplate3 = Template(
 """{
-  user(login: $user) {
-    followers(first: 100, after: $curso) {
-      nodes {
-        login
-      }
-      edges {
-        cursor
-      }
+    user(login: $user) {
+        followers(first: 100, after: $curso) {
+            nodes {
+                login
+            }
+            edges {
+                cursor
+            }
+        }
     }
-  }
 }"""
 )
 
 #--uinfo (following)
 queryTemplate4 = Template(
 """{
-  user(login: $user) {
-    following(first: 100, after: $curso) {
-      nodes {
-        login
-      }
-      edges {
-        cursor
-      }
+    user(login: $user) {
+        following(first: 100, after: $curso) {
+            nodes {
+                login
+            }
+            edges {
+                cursor
+            }
+        }
     }
-  }
 }"""
 )
 
 #--list (init)
 queryTemplate5 = Template(
 """{
-  user(login: $user) {
-    repositories(first: 10, ownerAffiliations: OWNER, orderBy: {field: $str, direction: $str2}) {
-      totalCount
-      nodes {
-        name
-        isFork
-      }
-      edges {
-        cursor
-      }
+    user(login: $user) {
+        repositories(first: 10, ownerAffiliations: OWNER, orderBy: {field: $str, direction: $str2}) {
+            totalCount
+            nodes {
+                name
+                isFork
+            }
+            edges {
+                cursor
+            }
+        }
     }
-  }
 }"""
 )
 
 #--list (after)
 queryTemplate6 = Template(
 """{
-  user(login: $user) {
-    repositories(first: 10, ownerAffiliations: OWNER, orderBy: {field: $str, direction: $str2}, after: $curso) {
-      nodes {
-        name
-        isFork
-      }
-      edges {
-        cursor
-      }
+    user(login: $user) {
+        repositories(first: 10, ownerAffiliations: OWNER, orderBy: {field: $str, direction: $str2}, after: $curso) {
+            nodes {
+                name
+                isFork
+            }
+            edges {
+                cursor
+            }
+        }
     }
-  }
 }"""
 )
 
